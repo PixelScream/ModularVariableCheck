@@ -17,11 +17,47 @@ using System;
 [DefaultExecutionOrder(+100)]
 [CreateAssetMenu (menuName="xoio/Transitions/Variable")]
 // ISerializationCallbackReceiver < if we ever want to try before and after serilaztion again ..
-public class VariableTransition : TransitionBase  {
+public class VariableTransition : ScriptableObject  {
 
+	public ScriptableObject tings;
+	ModularCheckBase _modularCheck;
+	public ModularCheckBase ModularCheck
+	{
+		get
+		{
+			return _modularCheck;
+		}
+		set
+		{
+			if(_modularCheck != value)
+			{
+				DestroyImmediate( _modularCheck, true);
+				_modularCheck = value;
+			}
+			Dirty = false;
+		}
+	}
+
+	public bool Check
+	{
+		get
+		{
+			if(!Dirty)
+			{
+				return _modularCheck.Check();
+			}
+			else
+			{
+				return ReflectionCheck();
+			}
+		}
+	}
+
+#region Info
 	public float checkAgainstFloat = 0;
 
-	[HideInInspector] public string propName;
+
+	public string propName;
 	public PropertyInfo prop;
 	public Type propType, boolType;
 
@@ -46,8 +82,9 @@ public class VariableTransition : TransitionBase  {
 	bool cachedAnswer;
 	int lastCalled = -1;
 
-	public override bool Check()
+	public bool ReflectionCheck()
 	{
+		
 		if(Time.frameCount == lastCalled)
 			return cachedAnswer;
 
@@ -114,7 +151,7 @@ public class VariableTransition : TransitionBase  {
 */
     public void OnEnable()
     {
-		if(propName != null && propName != "")
+		if(Asigned)
 		{
 			prop = tings.GetType().GetProperty(propName);
 			propType = prop.GetValue(tings).GetType();
@@ -122,5 +159,28 @@ public class VariableTransition : TransitionBase  {
 		}
     }
 
+	public bool Asigned 
+	{
+		get
+		{
+			return propName == null && propName == "";
+		}
+	}
 
+
+#endregion
+
+	private bool dirty = false;
+	public bool Dirty
+	{
+		get
+		{
+			return _modularCheck == null || dirty;
+		}
+		set
+		{
+			dirty = _modularCheck != null && value;
+			
+		}
+	}
 }

@@ -69,7 +69,7 @@ public class VariableTransitionEditor : Editor
 				EditorGUILayout.PropertyField(compFloat );
 				EditorGUILayout.PropertyField(checkAgainstFloat, new GUIContent("Check Against"));
 			}
-			GUILayout.Label(GetResultString());
+
 		}
 		else
 		{
@@ -87,7 +87,7 @@ public class VariableTransitionEditor : Editor
 			serializedObject.ApplyModifiedProperties();
 		}
 		
-		Debug.Log("over riding");
+		GUILayout.Label(GetResultString());
 	}
 
 	void Init()
@@ -97,10 +97,10 @@ public class VariableTransitionEditor : Editor
 
 		GetOptions();
 
-		if(transition.propName == "")
+		if(!transition.Asigned)
 			return;
 
-		for(int i = 1; i < props.Length; i++)
+		for(int i = 0; i < props.Length; i++)
 		{
 			if(props[i].Name == transition.propName)
 			{
@@ -108,6 +108,7 @@ public class VariableTransitionEditor : Editor
 				return;
 			}
 		}
+
 	}
 
 	[ContextMenu ("Update Options")]
@@ -130,7 +131,6 @@ public class VariableTransitionEditor : Editor
 
 	void Set(int v)
 	{
-		Debug.Log("UI changed");
 		index = v;
 
 		// if the index is empty slot reset transition
@@ -159,14 +159,23 @@ public class VariableTransitionEditor : Editor
 
 	string GetResultString()
 	{
-		if(transition.propType == typeof(bool))
+		if(transition.Asigned)
 		{
-			return 	transition.propName + " is currently:" + ((bool)transition.prop.GetValue(transition.tings)) +
-					", and this check would return:" + transition.Check();
+			if(transition.propType == typeof(bool))
+			{
+				return 	transition.propName + " is currently:" + ((bool)transition.prop.GetValue(transition.tings)) +
+						", and this check would return:" + transition.ReflectionCheck();
+			}
+			else
+			{
+				return "will handle things other than bools momentarily";
+			}
 		}
 		else
 		{
-			return "will handle things other than bools momentarily";
+			return "unasigned";
 		}
 	}
+
+
 }
