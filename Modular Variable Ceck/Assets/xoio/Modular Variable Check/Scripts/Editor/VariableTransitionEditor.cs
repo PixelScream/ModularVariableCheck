@@ -51,6 +51,7 @@ public class VariableTransitionEditor : Editor
 				serializedObject.ApplyModifiedProperties();
 				GetOptions();
 				Debug.Log("checked object reference to " + conTings.name);
+				transition.Dirty = true;
 			}
 		}
 		
@@ -70,6 +71,9 @@ public class VariableTransitionEditor : Editor
 				EditorGUILayout.PropertyField(checkAgainstFloat, new GUIContent("Check Against"));
 			}
 
+			if(GUILayout.Button("Test"))
+				Debug.Log(transition.name + " test returns as:" + transition.Check);
+
 		}
 		else
 		{
@@ -85,6 +89,7 @@ public class VariableTransitionEditor : Editor
 			}
 			EditorUtility.SetDirty( target );
 			serializedObject.ApplyModifiedProperties();
+			transition.Dirty = true;
 		}
 		
 		GUILayout.Label(GetResultString());
@@ -102,7 +107,7 @@ public class VariableTransitionEditor : Editor
 
 		for(int i = 0; i < props.Length; i++)
 		{
-			if(props[i].Name == transition.propName)
+			if(props[i].Name == transition.PropName)
 			{
 				index = i + 1;
 				return;
@@ -136,7 +141,7 @@ public class VariableTransitionEditor : Editor
 		// if the index is empty slot reset transition
 		if(index == 0)
 		{
-			transition.propName = "";
+			transition.PropName = "";
 			return;
 		}
 		
@@ -144,16 +149,15 @@ public class VariableTransitionEditor : Editor
 
 		if(t == typeof(bool) || t == typeof(float))
 		{
-			transition.propName = props[index - 1].Name;
+			transition.PropName = props[index - 1].Name;
 			transition.propType = t;
 		}
 		else
 		{
-			transition.propName = "";
+			transition.PropName = "";
 			Debug.LogWarning("Variable Transition only supports bools and floats at the mo, sorry\n"
 					+ " tried type was " + transition.propType, this);	
 		}
-
 
 	}
 
@@ -163,7 +167,7 @@ public class VariableTransitionEditor : Editor
 		{
 			if(transition.propType == typeof(bool))
 			{
-				return 	transition.propName + " is currently:" + ((bool)transition.prop.GetValue(transition.tings)) +
+				return 	transition.PropName + " is currently:" + ((bool)transition.prop.GetValue(transition.tings)) +
 						", and this check would return:" + transition.ReflectionCheck();
 			}
 			else

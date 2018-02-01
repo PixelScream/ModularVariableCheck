@@ -37,7 +37,6 @@ public class VariableTransition : ScriptableObject  {
 			Dirty = false;
 		}
 	}
-
 	public bool Check
 	{
 		get
@@ -48,6 +47,7 @@ public class VariableTransition : ScriptableObject  {
 			}
 			else
 			{
+				Debug.LogWarning(name + " isn't cooked, using relfection", this);
 				return ReflectionCheck();
 			}
 		}
@@ -57,7 +57,22 @@ public class VariableTransition : ScriptableObject  {
 	public float checkAgainstFloat = 0;
 
 
-	public string propName;
+	private string _propName;
+	public string PropName 
+	{
+		get
+		{
+			 return _propName;
+		}
+		set 
+		{
+			if(_propName != value)
+			{
+				_propName = value;
+				UpdateProperty();
+			}
+		}
+	}
 	public PropertyInfo prop;
 	public Type propType, boolType;
 
@@ -153,20 +168,24 @@ public class VariableTransition : ScriptableObject  {
     {
 		if(Asigned)
 		{
-			prop = tings.GetType().GetProperty(propName);
-			propType = prop.GetValue(tings).GetType();
-			boolType = typeof(bool);
+			UpdateProperty();
 		}
     }
+
+	public void UpdateProperty()
+	{
+		prop = tings.GetType().GetProperty(PropName);
+		propType = prop.GetValue(tings).GetType();
+		boolType = typeof(bool);
+	}
 
 	public bool Asigned 
 	{
 		get
 		{
-			return propName == null && propName == "";
+			return PropName != null && PropName != "";
 		}
 	}
-
 
 #endregion
 
@@ -179,7 +198,8 @@ public class VariableTransition : ScriptableObject  {
 		}
 		set
 		{
-			dirty = _modularCheck != null && value;
+			Debug.Log(value);
+			dirty = _modularCheck == null || value;
 			
 		}
 	}

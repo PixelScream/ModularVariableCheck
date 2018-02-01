@@ -12,4 +12,9 @@ public class ModularCheckTest : ModularCheckBase {
 	{
 		return test;
 	}
+
+	public override void Init(ScriptableObject so)
+	{
+
+	}
 }

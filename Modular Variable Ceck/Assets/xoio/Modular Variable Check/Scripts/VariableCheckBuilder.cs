@@ -163,7 +163,7 @@ namespace ModularVariableCheck
 			returnStatement.Expression = 
 					new CodeSnippetExpression(variableName + " == " + 
 									scriptableObjectVariablename + "." + 
-									variableObject.propName);
+									variableObject.PropName);
 			
 			//new CodeFieldReferenceExpression(
         	//								new CodeThisReferenceExpression(), "testAgainst");
@@ -183,6 +183,33 @@ namespace ModularVariableCheck
 			checkMethod.Statements.Add(returnStatement);
 
 			targetClass.Members.Add(checkMethod);
+
+
+			// create the initalized function, to store a reference to the scriptable object
+			CodeMemberMethod initMethod = new CodeMemberMethod();
+			initMethod.Attributes = MemberAttributes.Public | MemberAttributes.Override;
+			initMethod.Name = "Init";
+			initMethod.Parameters.Add ( new CodeParameterDeclarationExpression (
+				typeof(ScriptableObject), "so"
+			));
+
+			CodeFieldReferenceExpression soRef =
+				new CodeFieldReferenceExpression (
+					new CodeThisReferenceExpression(), scriptableObjectVariablename
+				);
+			initMethod.Statements.Add (
+				new CodeAssignStatement( 
+					soRef,
+					new CodeCastExpression (
+						variableObject.tings.GetType(),
+						new CodeArgumentReferenceExpression("so")
+					)
+					
+				)
+			);
+
+			targetClass.Members.Add(initMethod);
+
 
         }
         /// <summary>
@@ -230,6 +257,8 @@ namespace ModularVariableCheck
 			AssetDatabase.Refresh();
 			
 			variableObject.ModularCheck = so as ModularCheckBase;
+
+			(so as ModularCheckBase).Init(variableObject.tings);
 
 		}
 
