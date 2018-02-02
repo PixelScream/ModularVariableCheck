@@ -13,16 +13,16 @@ namespace ModularVariableCheck
     using UnityEngine;
     
     
-    public sealed class VariableTest_Lessthan2_MVC : ModularCheckBase
+    public sealed class Tester_True_MVC : ModularCheckBase
     {
         
         public VariableTester scriptObjectRef;
         
-        private float testAgainst = 6F;
+        private bool testAgainst = true;
         
         public override bool Check()
         {
-            return testAgainst < scriptObjectRef.TestFloat;
+            return testAgainst == scriptObjectRef.TestBool;
         }
         
         public override void Init(UnityEngine.ScriptableObject so)

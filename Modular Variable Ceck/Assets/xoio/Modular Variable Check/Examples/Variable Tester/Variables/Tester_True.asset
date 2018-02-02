@@ -9,16 +9,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 45cd63fe55d82479993e54abc7a9d580, type: 3}
-  m_Name: VariableTest_Lessthan2
+  m_Name: Tester_True
   m_EditorClassIdentifier: 
   scriptRef: {fileID: 11400000, guid: 020defe4aa2c14d9084077d84c92fb5d, type: 2}
-  _modularCheck: {fileID: 114058935131208094}
-  _propName: TestFloat
+  _modularCheck: {fileID: 114990790134765892}
+  _propName: TestBool
   compBool: 0
-  checkAgainstFloat: 6
-  compFloat: 2
-  _dirty: 1
---- !u!114 &114058935131208094
+  checkAgainstFloat: 0
+  compFloat: 0
+  _dirty: 0
+--- !u!114 &114990790134765892
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
@@ -26,7 +26,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2e2090ef21b0847c2b0775c63bccd7ee, type: 3}
-  m_Name: VariableTest_Lessthan2_MVC
+  m_Script: {fileID: 11500000, guid: 7dc785abc3d354c358e9666844777af9, type: 3}
+  m_Name: Tester_True_MVC
   m_EditorClassIdentifier: 
   scriptObjectRef: {fileID: 11400000, guid: 020defe4aa2c14d9084077d84c92fb5d, type: 2}

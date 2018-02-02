@@ -308,16 +308,16 @@ namespace ModularVariableCheck
 				(so as ModularCheckBase).Init(variableObject.scriptRef);
 
 			}
-			else
-			{
-				Resources.UnloadAsset(variableObject.ModularCheck);
-				//Resources.Load(variableObject.ModularCheck);
-				
-			}
+
 			variableObject.Dirty = false;
 
 			AssetDatabase.SaveAssets();
 			AssetDatabase.Refresh();
+
+			Resources.UnloadAsset(variableObject.ModularCheck);
+
+			//Resources.Load( AssetDatabase.GetAssetPath(variableObject)); 
+			//Selection.activeObject = variableObject;
 		}
 
 		string ClassName 

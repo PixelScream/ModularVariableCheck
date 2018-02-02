@@ -11,5 +11,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 050404d1687c4470cbdfca913a40812b, type: 3}
   m_Name: Variable Tester
   m_EditorClassIdentifier: 
-  _testBool: 1
-  _testFloat: 1.55
+  _testBool: 0
+  _testFloat: 0.7
