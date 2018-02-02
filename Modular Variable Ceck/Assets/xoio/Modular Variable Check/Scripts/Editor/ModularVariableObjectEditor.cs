@@ -14,7 +14,7 @@ public class ModularVariableEditor : Editor
 {
 	public PropertyInfo[] props;
 
-	public string[] options, propNames;
+	public string[] options;
 
     public int index = 0;
 
@@ -22,7 +22,9 @@ public class ModularVariableEditor : Editor
 
 	SerializedProperty checkAgainstFloat, compBool, compFloat, scriptRefProp, propName, dirty;
 
-
+	/// <summary>
+	/// On selected get serialized properties and initalized GUI
+	/// </summary>
 	void OnEnable()
 	{
 		propName = serializedObject.FindProperty("_propName");
@@ -37,13 +39,10 @@ public class ModularVariableEditor : Editor
 	public override void OnInspectorGUI()
 	{
 		//base.OnInspectorGUI();
-
 		//GUI.enabled = !Application.isPlaying;
-
-
-
 		EditorGUI.BeginChangeCheck();
 
+		// Script reference
 		using (var checkObjectRef = new EditorGUI.ChangeCheckScope())
         {
 			EditorGUILayout.PropertyField(scriptRefProp);
@@ -51,7 +50,6 @@ public class ModularVariableEditor : Editor
             {
 				Apply();
 				GetOptions();
-				//Debug.Log("checked object reference to " + scriptRefProp.name);
 			}
 		}
 		
@@ -59,6 +57,8 @@ public class ModularVariableEditor : Editor
 		int v = -1;
 		if(variableObject.scriptRef != null)
 		{
+			// Main UI section
+			// list of options + controls
 			using (var checkSettings = new EditorGUI.ChangeCheckScope())
         	{
 				v = EditorGUILayout.Popup(index, options);
@@ -85,22 +85,29 @@ public class ModularVariableEditor : Editor
 				}
 			}
 
-			if(!Application.isPlaying && variableObject.Dirty && GUILayout.Button("Cook"))
+			// Cook button
+			if(variableObject.Asigned && !Application.isPlaying && variableObject.Dirty && GUILayout.Button("Cook"))
 			{
 				EditorWindow window = EditorWindow.GetWindow(typeof(VariableBuilder));
 				VariableBuilder builder = window as VariableBuilder;
 				builder.variableObject = variableObject;
 				builder.Create();
 			}
+
+			// Preview of result string
+			GUILayout.Label(GetResultString());
 		}
 		else
 		{
 			EditorGUILayout.LabelField("Asign Controller Setting");
 		}
 		
-		GUILayout.Label(GetResultString());
+
 	}
 
+	/// <summary>
+	/// Apply serialzed properties
+	/// </summary>
 	void Apply()
 	{
 		dirty.boolValue = true;
@@ -124,7 +131,7 @@ public class ModularVariableEditor : Editor
 		if(!variableObject.Asigned)
 			return;
 
-		for(int i = 0; i < options.Length; i++)
+		for(int i = 0; i < props.Length; i++)
 		{
 			if(props[i].Name == variableObject.PropName)
 			{

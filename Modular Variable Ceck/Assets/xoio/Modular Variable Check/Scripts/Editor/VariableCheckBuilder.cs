@@ -310,11 +310,10 @@ namespace ModularVariableCheck
 			}
 			else
 			{
-				//Resources.UnloadAsset(variableObject.ModularCheck);
+				Resources.UnloadAsset(variableObject.ModularCheck);
 				//Resources.Load(variableObject.ModularCheck);
 				
 			}
-			Debug.Log("going to set dirty to false");
 			variableObject.Dirty = false;
 
 			AssetDatabase.SaveAssets();

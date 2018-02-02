@@ -14,6 +14,7 @@ using System;
 /// TODO: support more variable types
 /// TODO: stored cooked info instead of recooking every time
 /// TODO: fix reflection check
+/// TODO: clear dirty changes
 /// </summary>
 
 
