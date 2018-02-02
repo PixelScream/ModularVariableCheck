@@ -1,12 +1,13 @@
 fileFormatVersion: 2
 guid: 45cd63fe55d82479993e54abc7a9d580
-timeCreated: 1517523670
+timeCreated: 1517575911
 licenseType: Free
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
   defaultReferences:
-  - tings: {fileID: 11400000, guid: 28c2f6e8e592e4cd7b516a6fff060adc, type: 2}
+  - scriptRef: {fileID: 11400000, guid: 020defe4aa2c14d9084077d84c92fb5d, type: 2}
+  - _modularCheck: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

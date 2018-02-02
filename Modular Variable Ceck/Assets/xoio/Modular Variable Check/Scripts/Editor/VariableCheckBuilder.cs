@@ -22,10 +22,10 @@ namespace ModularVariableCheck
 		public static void  ShowWindow () {
 			EditorWindow.GetWindow(typeof(VariableBuilder));
 		}
-		VariableTransition variableObject;
+		ModularVariableObject variableObject;
 		void OnGUI () {
 
-			variableObject = EditorGUILayout.ObjectField(variableObject, typeof(VariableTransition), false, null) as VariableTransition;
+			variableObject = EditorGUILayout.ObjectField(variableObject, typeof(ModularVariableObject), false, null) as ModularVariableObject;
 
 			// The actual window code goes here
 			if(variableObject != null)
@@ -108,7 +108,7 @@ namespace ModularVariableCheck
 			CodeMemberField scriptRefField = new CodeMemberField();
 			scriptRefField.Attributes = MemberAttributes.Public;
 			scriptRefField.Name = scriptableObjectVariablename;
-			scriptRefField.Type = new CodeTypeReference(variableObject.tings.GetType());
+			scriptRefField.Type = new CodeTypeReference(variableObject.scriptRef.GetType());
 			targetClass.Members.Add(scriptRefField);
 
 			// create the variable to check against
@@ -116,26 +116,23 @@ namespace ModularVariableCheck
 			testAgainstField.Attributes = MemberAttributes.Private;
 			testAgainstField.Name = variableName;
 
-			testAgainstField.Type = new CodeTypeReference(typeof(bool));
-
-			//bool tempBool = 
-			testAgainstField.InitExpression = 
-				new CodePrimitiveExpression( variableObject.compBool == VariableTransition.ComparisonsBool.True  );
-
-				//new CodeObject()
-			/* 
+			
 			if(variableType == typeof(bool))
 			{
 				testAgainstField.Type = new CodeTypeReference(typeof(bool));
-				//testAgainstField.InitExpression = new CodePrimitiveExpression(variableObject.compBool);
+				testAgainstField.InitExpression = 
+					new CodePrimitiveExpression ( 	variableObject.compBool == 
+													ModularVariableObject.ComparisonsBool.True  
+					);
+
 			}
 			else
 			{
-				testAgainstField.Type = new CodeTypeReference(typeof(bool));
-				//testAgainstField.InitExpression = new CodePrimitiveExpression(variableObject.compFloat);
-				//testAgainstField.InitExpression = new CodeFieldReferenceExpression(variableObject.compFloat);
+				testAgainstField.Type = new CodeTypeReference(typeof(float));
+				testAgainstField.InitExpression =
+					new CodePrimitiveExpression (	variableObject.checkAgainstFloat );
 			}
-			*/
+			
 			targetClass.Members.Add(testAgainstField);
 
         }
@@ -160,26 +157,38 @@ namespace ModularVariableCheck
 
 			CodeMethodReturnStatement returnStatement = new CodeMethodReturnStatement();
 
-			returnStatement.Expression = 
-					new CodeSnippetExpression(variableName + " == " + 
-									scriptableObjectVariablename + "." + 
-									variableObject.PropName);
+
 			
 			//new CodeFieldReferenceExpression(
         	//								new CodeThisReferenceExpression(), "testAgainst");
 
-			/* 
-			if(variableType == typeof(bool))
+			string compType = " == ";
+
+			if(variableType == typeof(float))
 			{
-				testAgainstField.Type = new CodeTypeReference(typeof(bool));
-				//testAgainstField.InitExpression = new CodePrimitiveExpression(variableObject.compBool);
+				switch(variableObject.compFloat)
+				{
+					case(ModularVariableObject.ComparisonsFloat.Equal):
+						compType = "==";
+						break;
+					case(ModularVariableObject.ComparisonsFloat.Greater):
+						compType = ">";
+						break;
+					case(ModularVariableObject.ComparisonsFloat.Less):
+						compType = "<";
+						break;
+					case(ModularVariableObject.ComparisonsFloat.NotEqual):
+						compType = "!=";
+						break;
+
+				}
 			}
-			else
-			{
-				testAgainstField.Type = new CodeTypeReference(typeof(bool));
-				//testAgainstField.InitExpression = new CodePrimitiveExpression(variableObject.compFloat);
-			}
-			*/
+
+			returnStatement.Expression = 
+					new CodeSnippetExpression(variableName + compType + 
+									scriptableObjectVariablename + "." + 
+									variableObject.PropName);
+			
 			checkMethod.Statements.Add(returnStatement);
 
 			targetClass.Members.Add(checkMethod);
@@ -201,7 +210,7 @@ namespace ModularVariableCheck
 				new CodeAssignStatement( 
 					soRef,
 					new CodeCastExpression (
-						variableObject.tings.GetType(),
+						variableObject.scriptRef.GetType(),
 						new CodeArgumentReferenceExpression("so")
 					)
 					
@@ -244,40 +253,23 @@ namespace ModularVariableCheck
             }
         }
 
-		public void AddToScriptableObject()
-		{
-
-			string className = ClassName;
-			Debug.Log(className);
-			ScriptableObject so = ScriptableObject.CreateInstance(className);
-			so.name = className;
-
-			AssetDatabase.AddObjectToAsset(so, variableObject);
-			AssetDatabase.SaveAssets();
-			AssetDatabase.Refresh();
-			
-			variableObject.ModularCheck = so as ModularCheckBase;
-
-			(so as ModularCheckBase).Init(variableObject.tings);
-
-		}
-
         /// <summary>
         /// Create the CodeDOM graph and generate the code.
         /// </summary>
          void Main()
         {
-			Debug.Log("variable object name before " + variableObject.name);
-			variableType = variableObject.prop.GetValue(variableObject.tings).GetType();
-			Debug.Log("variable object name after " + variableObject.name);
-            VariableBuilder sample = this;
-			sample.Prep();
-            sample.AddFields();
-            sample.AddProperties();
-            sample.AddMethod();
-            sample.AddConstructor();
-            sample.AddEntryPoint();
-            sample.GenerateCSharpCode(outputFileName);
+
+			object testedVariable = variableObject.scriptRef.GetType().GetProperty(variableObject.PropName).GetValue(variableObject.scriptRef);
+			variableType = testedVariable.GetType();
+
+
+			Prep();
+            AddFields();
+            AddProperties();
+            AddMethod();
+        	AddConstructor();
+        	AddEntryPoint();
+            GenerateCSharpCode(outputFileName);
 
 			//AddToScriptableObject();
 			waitingToAddScript = true;
@@ -294,12 +286,33 @@ namespace ModularVariableCheck
 			}
 		}
 
+		public void AddToScriptableObject()
+		{
+
+			string className = ClassName;
+			Debug.Log(className);
+			ScriptableObject so = ScriptableObject.CreateInstance(className);
+			so.name = className;
+			//so.hideFlags = HideFlags.HideInHierarchy;
+
+			AssetDatabase.AddObjectToAsset(so, variableObject);
+			AssetDatabase.SaveAssets();
+			AssetDatabase.Refresh();
+			
+			if(variableObject.ModularCheck != null)
+				DestroyImmediate(variableObject.ModularCheck, true);
+			variableObject.ModularCheck = so as ModularCheckBase;
+
+			(so as ModularCheckBase).Init(variableObject.scriptRef);
+
+		}
+
 		string ClassName 
 		{
 			get
 			{
 				string s = variableObject.name;
-				s = RemoveSpaces(s) + "_Class";
+				s = RemoveSpaces(s) + "_MVC";
 				return s;
 			}
 		
