@@ -14,50 +14,52 @@ namespace ModularVariableCheck
     /// <summary>
     /// This code example creates a graph using a CodeCompileUnit and  
     /// generates source code for the graph using the CSharpCodeProvider.
+	///
+	/// TODO: support changing the name of the variable objects
+	// 	TODO: an automated cooking process that scans the whole project
     /// </summary>
     class VariableBuilder : EditorWindow 
 	{
-		[MenuItem ("Tools/Variable Builder")]
 
+		#region  EditorWindow
+
+		[MenuItem ("Tools/Variable Builder")]
 		public static void  ShowWindow () {
 			EditorWindow.GetWindow(typeof(VariableBuilder));
 		}
-		ModularVariableObject variableObject;
+
+		public ModularVariableObject variableObject;
 		void OnGUI () {
 
 			variableObject = EditorGUILayout.ObjectField(variableObject, typeof(ModularVariableObject), false, null) as ModularVariableObject;
 
-			// The actual window code goes here
 			if(variableObject != null)
 			{
-				
-				if(GUILayout.Button("Create"))
+				if(GUILayout.Button("Cook " + variableObject.name))
 				{
-					// 
-					string s =  Path.GetDirectoryName(AssetDatabase.GetAssetPath(variableObject) );
-					//s = Path.ChangeExtension(s, null);
-					s += "/" + ClassName + ".cs";
-					Debug.Log(s);
-					outputFileName = s;
-					Main();
-					//GenerateCSharpCode(s);
-					AssetDatabase.SaveAssets();
-					AssetDatabase.Refresh();
-				}
-
-				if(GUILayout.Button("add to Scriptable Object"))
-				{
-					AddToScriptableObject();
+					Create();
 				}
 			}
 
-			
-
 		}
 
+		/// <summary>
+		/// sets of the cooking process for variableObject
+		/// </summary>
+		public void Create()
+		{		
+			if(!variableObject.Dirty)	
+				return;
+
+			outputFileName = Path.GetDirectoryName(AssetDatabase.GetAssetPath(variableObject) ) + "/" + ClassName + ".cs";
+			Main();
+			AssetDatabase.SaveAssets();
+			AssetDatabase.Refresh();
+		}
+		#endregion
+		
 		const string 	variableName = "testAgainst",
 						scriptableObjectVariablename = "scriptObjectRef";
-		
     
         /// <summary>
         /// Define the compile unit to use for code generation. 
@@ -75,32 +77,32 @@ namespace ModularVariableCheck
         /// </summary>
         private string outputFileName;
 
+        /// <summary>
+		/// the type of variable that's baked into the check
+        /// </summary>
 		private Type variableType;
 
         /// <summary>
         /// Define the class.
         /// </summary>
-        public void Prep()
+        public void DefineClass()
         {
-
-
             targetUnit = new CodeCompileUnit();
             CodeNamespace samples = new CodeNamespace("ModularVariableCheck");
             samples.Imports.Add(new CodeNamespaceImport("UnityEngine"));
-
-
 
             targetClass = new CodeTypeDeclaration(ClassName);
             targetClass.IsClass = true;
             targetClass.TypeAttributes =
                 TypeAttributes.Public | TypeAttributes.Sealed;
+
 			targetClass.BaseTypes.Add ( "ModularCheckBase" );
             samples.Types.Add(targetClass);
             targetUnit.Namespaces.Add(samples);
         }
 
         /// <summary>
-        /// Adds two fields to the class.
+        /// Create the fields for the class
         /// </summary>
         public void AddFields()
         {
@@ -137,7 +139,7 @@ namespace ModularVariableCheck
 
         }
         /// <summary>
-        /// Add three properties to the class.
+        /// Create class's properties
         /// </summary>
         public void AddProperties()
         {
@@ -145,70 +147,72 @@ namespace ModularVariableCheck
         }
 
         /// <summary>
-        /// Adds a method to the class. This method multiplies values stored 
-        /// in both fields.
+        /// Adds a method which does a comparison between local variable
+        /// and referenced variable, called Check.
+		// 	Also sets up Init method
         /// </summary>
         public void AddMethod()
         {
+			// Create Check method
 			CodeMemberMethod checkMethod = new CodeMemberMethod();
 			checkMethod.Attributes = MemberAttributes.Public | MemberAttributes.Override;
 			checkMethod.Name = "Check";
 			checkMethod.ReturnType = new CodeTypeReference(typeof(bool));
 
-			CodeMethodReturnStatement returnStatement = new CodeMethodReturnStatement();
-
-
-			
-			//new CodeFieldReferenceExpression(
-        	//								new CodeThisReferenceExpression(), "testAgainst");
-
+			// Comparison function 
 			string compType = " == ";
-
 			if(variableType == typeof(float))
 			{
 				switch(variableObject.compFloat)
 				{
 					case(ModularVariableObject.ComparisonsFloat.Equal):
-						compType = "==";
+						compType = " == ";
 						break;
 					case(ModularVariableObject.ComparisonsFloat.Greater):
-						compType = ">";
+						compType = " < ";
 						break;
 					case(ModularVariableObject.ComparisonsFloat.Less):
-						compType = "<";
+						compType = " > ";
 						break;
 					case(ModularVariableObject.ComparisonsFloat.NotEqual):
-						compType = "!=";
+						compType = " != ";
 						break;
 
 				}
 			}
 
+			// Creates a return statment which compares local and ref variable
+			CodeMethodReturnStatement returnStatement = new CodeMethodReturnStatement();
 			returnStatement.Expression = 
 					new CodeSnippetExpression(variableName + compType + 
 									scriptableObjectVariablename + "." + 
 									variableObject.PropName);
-			
 			checkMethod.Statements.Add(returnStatement);
 
+			// Adds Check method to class
 			targetClass.Members.Add(checkMethod);
 
 
-			// create the initalized function, to store a reference to the scriptable object
+
+
+			// Create the Initalized function, 
+			// to store a reference to the scriptable object
 			CodeMemberMethod initMethod = new CodeMemberMethod();
 			initMethod.Attributes = MemberAttributes.Public | MemberAttributes.Override;
 			initMethod.Name = "Init";
+
+			// Incoming Scriptable Object parameter 'so'
 			initMethod.Parameters.Add ( new CodeParameterDeclarationExpression (
 				typeof(ScriptableObject), "so"
 			));
 
-			CodeFieldReferenceExpression soRef =
-				new CodeFieldReferenceExpression (
-					new CodeThisReferenceExpression(), scriptableObjectVariablename
-				);
+			// Adds lines which casts income SO to correct type
+			// then assigns it to local variable
 			initMethod.Statements.Add (
 				new CodeAssignStatement( 
-					soRef,
+					new CodeFieldReferenceExpression (
+						new CodeThisReferenceExpression(), scriptableObjectVariablename
+					),
 					new CodeCastExpression (
 						variableObject.scriptRef.GetType(),
 						new CodeArgumentReferenceExpression("so")
@@ -221,21 +225,7 @@ namespace ModularVariableCheck
 
 
         }
-        /// <summary>
-        /// Add a constructor to the class.
-        /// </summary>
-        public void AddConstructor()
-        {
 
-        }
-
-        /// <summary>
-        /// Add an entry point to the class.
-        /// </summary>
-        public void AddEntryPoint()
-        {
-
-        }
         /// <summary>
         /// Generate CSharp source code from the compile unit.
         /// </summary>
@@ -258,25 +248,29 @@ namespace ModularVariableCheck
         /// </summary>
          void Main()
         {
+			// Uses relection to get the type of variable being checked against
+			variableType = variableObject.scriptRef.GetType()
+							.GetProperty(variableObject.PropName)
+							.GetValue(variableObject.scriptRef).GetType();
 
-			object testedVariable = variableObject.scriptRef.GetType().GetProperty(variableObject.PropName).GetValue(variableObject.scriptRef);
-			variableType = testedVariable.GetType();
 
-
-			Prep();
+			DefineClass();
             AddFields();
             AddProperties();
             AddMethod();
-        	AddConstructor();
-        	AddEntryPoint();
             GenerateCSharpCode(outputFileName);
 
 			//AddToScriptableObject();
 			waitingToAddScript = true;
         }
 
-		bool waitingToAddScript = false;
 
+		/// <summary>
+        /// Need to wait for Compiler to finish,
+		/// then see if any VariableObjects need updating
+		/// (Might be a better way of looking for this calback)
+        /// </summary>
+		bool waitingToAddScript = false;
 		void Update()
 		{
 			if(waitingToAddScript && !EditorApplication.isCompiling)
@@ -286,25 +280,45 @@ namespace ModularVariableCheck
 			}
 		}
 
+		/// <summary>
+        /// If VariableObject doesn't have a child create one
+		/// TODO: make this more robust system for checking for changes + updating,
+		/// and do things like support renaming + other edgecases
+        /// </summary>
 		public void AddToScriptableObject()
 		{
+			Debug.Log("modular check = " + variableObject.ModularCheck);
+			if(variableObject.ModularCheck == null )
+			{
+				string className = ClassName;
+				//Debug.Log(className);
+				ScriptableObject so = ScriptableObject.CreateInstance(className);
+				so.name = className;
+				//so.hideFlags = HideFlags.HideInHierarchy;
 
-			string className = ClassName;
-			Debug.Log(className);
-			ScriptableObject so = ScriptableObject.CreateInstance(className);
-			so.name = className;
-			//so.hideFlags = HideFlags.HideInHierarchy;
+				AssetDatabase.AddObjectToAsset(so, variableObject);
 
-			AssetDatabase.AddObjectToAsset(so, variableObject);
+				/* (doesn't work)
+				if(variableObject.ModularCheck != null)
+					DestroyImmediate(variableObject.ModularCheck, true);
+				
+				*/
+				variableObject.ModularCheck = so as ModularCheckBase;
+
+				(so as ModularCheckBase).Init(variableObject.scriptRef);
+
+			}
+			else
+			{
+				//Resources.UnloadAsset(variableObject.ModularCheck);
+				//Resources.Load(variableObject.ModularCheck);
+				
+			}
+			Debug.Log("going to set dirty to false");
+			variableObject.Dirty = false;
+
 			AssetDatabase.SaveAssets();
 			AssetDatabase.Refresh();
-			
-			if(variableObject.ModularCheck != null)
-				DestroyImmediate(variableObject.ModularCheck, true);
-			variableObject.ModularCheck = so as ModularCheckBase;
-
-			(so as ModularCheckBase).Init(variableObject.scriptRef);
-
 		}
 
 		string ClassName 

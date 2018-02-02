@@ -3,17 +3,24 @@ using UnityEngine;
 using System.Collections;
 using System.Reflection;
 
+namespace ModularVariableCheck
+{
+/// <summary>
+/// Custom Editor for Modular Variable Object
+/// </summary>
+
 [CustomEditor(typeof(ModularVariableObject))]
 public class ModularVariableEditor : Editor
 {
 	public PropertyInfo[] props;
-	public string[] options;
+
+	public string[] options, propNames;
 
     public int index = 0;
 
 	protected ModularVariableObject variableObject;
 
-	SerializedProperty checkAgainstFloat, compBool, compFloat, scriptRefProp, propName;
+	SerializedProperty checkAgainstFloat, compBool, compFloat, scriptRefProp, propName, dirty;
 
 
 	void OnEnable()
@@ -23,6 +30,7 @@ public class ModularVariableEditor : Editor
 		compBool = serializedObject.FindProperty("compBool");
 		compFloat = serializedObject.FindProperty("compFloat");
 		scriptRefProp = serializedObject.FindProperty("scriptRef");
+		dirty = serializedObject.FindProperty("_dirty");
 		Init();
 	}
 
@@ -38,16 +46,12 @@ public class ModularVariableEditor : Editor
 
 		using (var checkObjectRef = new EditorGUI.ChangeCheckScope())
         {
-            // Block of code with controls
-            // that may set GUI.changed to true
 			EditorGUILayout.PropertyField(scriptRefProp);
             if (checkObjectRef.changed)
             {
-				EditorUtility.SetDirty( target );
-				serializedObject.ApplyModifiedProperties();
+				Apply();
 				GetOptions();
-				Debug.Log("checked object reference to " + scriptRefProp.name);
-				//variableObject.Dirty = true;
+				//Debug.Log("checked object reference to " + scriptRefProp.name);
 			}
 		}
 		
@@ -55,40 +59,55 @@ public class ModularVariableEditor : Editor
 		int v = -1;
 		if(variableObject.scriptRef != null)
 		{
-			v = EditorGUILayout.Popup(index, options);
+			using (var checkSettings = new EditorGUI.ChangeCheckScope())
+        	{
+				v = EditorGUILayout.Popup(index, options);
 
-			if(variableObject.propType == typeof(bool))
-			{
-				EditorGUILayout.PropertyField(compBool);
+				if(variableObject.propType == typeof(bool))
+				{
+					EditorGUILayout.PropertyField(compBool);
+				}
+				else if(variableObject.propType == typeof(float))
+				{
+					EditorGUILayout.PropertyField(compFloat );
+					EditorGUILayout.PropertyField(checkAgainstFloat, new GUIContent("Check Against"));
+				}
+				
+				if(checkSettings.changed)
+				{
+					if(v != -1 && v != index)
+					{
+						Set(v);
+					}
+					Apply();
+
+					variableObject.UpdateProperty();
+				}
 			}
-			else if(variableObject.propType == typeof(float))
+
+			if(!Application.isPlaying && variableObject.Dirty && GUILayout.Button("Cook"))
 			{
-				EditorGUILayout.PropertyField(compFloat );
-				EditorGUILayout.PropertyField(checkAgainstFloat, new GUIContent("Check Against"));
+				EditorWindow window = EditorWindow.GetWindow(typeof(VariableBuilder));
+				VariableBuilder builder = window as VariableBuilder;
+				builder.variableObject = variableObject;
+				builder.Create();
 			}
-
-			if(GUILayout.Button("Test"))
-				Debug.Log(variableObject.name + " test returns as:" + variableObject.Check);
-
 		}
 		else
 		{
 			EditorGUILayout.LabelField("Asign Controller Setting");
 		}
-
-		if(EditorGUI.EndChangeCheck())
-		{
-			
-			if(v != -1 && v != index)
-			{
-				Set(v);
-			}
-			EditorUtility.SetDirty( target );
-			serializedObject.ApplyModifiedProperties();
-			//variableObject.Dirty = true;
-		}
 		
-		//GUILayout.Label(GetResultString());
+		GUILayout.Label(GetResultString());
+	}
+
+	void Apply()
+	{
+		dirty.boolValue = true;
+		//variableObject.Dirty = true;
+		EditorUtility.SetDirty( target );
+		serializedObject.ApplyModifiedProperties();
+		
 	}
 
 	/// <summary>
@@ -105,7 +124,7 @@ public class ModularVariableEditor : Editor
 		if(!variableObject.Asigned)
 			return;
 
-		for(int i = 0; i < props.Length; i++)
+		for(int i = 0; i < options.Length; i++)
 		{
 			if(props[i].Name == variableObject.PropName)
 			{
@@ -183,8 +202,8 @@ public class ModularVariableEditor : Editor
 			{
 				
 				return 	variableObject.PropName + " is currently:" + 
-						(variableObject.prop.GetValue(variableObject.scriptRef)) +
-						", and this check would return:" + variableObject.ReflectionCheck();
+						(variableObject.prop.GetValue(variableObject.scriptRef)) + 
+						", \nand this check would return:" + variableObject.ReflectionCheck();
 			}
 			else
 			{
@@ -197,12 +216,7 @@ public class ModularVariableEditor : Editor
 		}
 	}
 
-/*	string BuildResultString(Type t)
-	{
-		return 	variableObject.PropName + " is currently:" + 
-				((t)variableObject.prop.GetValue(variableObject.scriptRef)) +
-				", and this check would return:" + variableObject.ReflectionCheck();
-	}
-	*/
+
+}
 
 }

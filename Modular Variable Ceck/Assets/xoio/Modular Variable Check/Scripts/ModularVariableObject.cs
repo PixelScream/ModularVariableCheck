@@ -16,6 +16,8 @@ using System;
 /// TODO: fix reflection check
 /// </summary>
 
+
+
 [DefaultExecutionOrder(+100)]
 [CreateAssetMenu (menuName="xoio/Variable/Variable Object")]
 public class ModularVariableObject : ScriptableObject  {
@@ -38,6 +40,7 @@ public class ModularVariableObject : ScriptableObject  {
 					DestroyImmediate( _modularCheck, true);
 				}
 				_modularCheck = value;
+				//Debug.Log("modular check: " + _modularCheck.name);
 				//if(_modularCheck != value)
 				//{
 					
@@ -80,7 +83,7 @@ public class ModularVariableObject : ScriptableObject  {
 	/// <summary>
 	/// The property name from the referenced object
 	/// </summary>
-	[SerializeField] public  string _propName;
+	[SerializeField]  string _propName;
 	public string PropName 
 	{
 		get
@@ -182,14 +185,14 @@ public class ModularVariableObject : ScriptableObject  {
 		return cachedAnswer;
 	}
 
-		// for testing purposes, print the property name
-		[ContextMenu("print prop")]
-		public void PrintProp()
-		{
-			Debug.Log("prop is currently " + prop.Name + ", of type " + propType);
-		}
+	// for testing purposes, print the property name
+	[ContextMenu("print prop")]
+	public void PrintProp()
+	{
+		Debug.Log("prop is currently " + prop.Name + ", of type " + propType);
+	}
 
-    public void OnEnable()
+    void OnEnable()
     {
 		if(Asigned)
 		{
@@ -199,8 +202,11 @@ public class ModularVariableObject : ScriptableObject  {
 
 	public void UpdateProperty()
 	{
-		prop = scriptRef.GetType().GetProperty(PropName);
-		propType = prop.GetValue(scriptRef).GetType();
+		if(Asigned)
+		{
+			prop = scriptRef.GetType().GetProperty(PropName);
+			propType = prop.GetValue(scriptRef).GetType();
+		}
 	}
 
 	public bool Asigned 
@@ -211,17 +217,17 @@ public class ModularVariableObject : ScriptableObject  {
 		}
 	}
 
-	[SerializeField] private bool dirty = false;
+	[SerializeField]  bool _dirty = false;
 	public bool Dirty
 	{
 		get
 		{
-			return _modularCheck == null || dirty;
+			return _modularCheck == null || _dirty;
 		}
 		set
 		{
-			Debug.Log(value);
-			dirty = _modularCheck == null || value;
+			Debug.Log("setting dirty to " + value);
+			_dirty = value;
 			
 		}
 	}
@@ -240,3 +246,4 @@ public class ModularVariableObject : ScriptableObject  {
 #endif
 
 }
+

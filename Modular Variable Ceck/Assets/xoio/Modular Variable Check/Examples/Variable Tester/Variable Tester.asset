@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Name: Variable Tester
   m_EditorClassIdentifier: 
   _testBool: 1
-  _testFloat: 1.9
+  _testFloat: -1.46
