@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45cd63fe55d82479993e54abc7a9d580, type: 3}
+  m_Name: SM_Grounded
+  m_EditorClassIdentifier: 
+  scriptRef: {fileID: 11400000, guid: 0bab7200a3b414ad7bf8ab394bc23d4b, type: 2}
+  _modularCheck: {fileID: 114335183455270000}
+  _propName: Grounded
+  compBool: 0
+  checkAgainstFloat: 0
+  compFloat: 0
+  _dirty: 0
+--- !u!114 &114335183455270000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ab345b51496a45f1809e41c43f04e0e, type: 3}
+  m_Name: SM_Grounded_MVC
+  m_EditorClassIdentifier: 
+  scriptObjectRef: {fileID: 11400000, guid: 0bab7200a3b414ad7bf8ab394bc23d4b, type: 2}

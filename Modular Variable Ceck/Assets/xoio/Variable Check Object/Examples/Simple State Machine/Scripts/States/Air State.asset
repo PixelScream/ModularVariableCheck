@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2dc446e678ce4e4aaa20017a231c69e, type: 3}
+  m_Name: Air State
+  m_EditorClassIdentifier: 
+  transitionTo:
+  - {fileID: 11400000, guid: 4fc43cc2f6c454d668ab85a68f628df1, type: 2}
+  - {fileID: 11400000, guid: 7f608fbc226e44215883c69cebf0da75, type: 2}
+  transitions:
+  - {fileID: 11400000, guid: c74a1485ab2dc41508b8fca2c4b8b1fc, type: 2}
+  - {fileID: 11400000, guid: d016a01e50f564771a7ca4994c8c8a99, type: 2}
+  speed: 5

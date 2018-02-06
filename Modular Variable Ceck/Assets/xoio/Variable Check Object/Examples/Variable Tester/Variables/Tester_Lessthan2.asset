@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45cd63fe55d82479993e54abc7a9d580, type: 3}
+  m_Name: Tester_Lessthan2
+  m_EditorClassIdentifier: 
+  scriptRef: {fileID: 11400000, guid: 020defe4aa2c14d9084077d84c92fb5d, type: 2}
+  _modularCheck: {fileID: 114306085183347838}
+  _propName: TestFloat
+  compBool: 0
+  checkAgainstFloat: 2
+  compFloat: 3
+  _dirty: 0
+--- !u!114 &114306085183347838
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a70d2a5b573b47a291a930dd9e15152, type: 3}
+  m_Name: Tester_Lessthan2_MVC
+  m_EditorClassIdentifier: 
+  scriptObjectRef: {fileID: 11400000, guid: 020defe4aa2c14d9084077d84c92fb5d, type: 2}
